@@ -1,0 +1,141 @@
+To start felix this must be done on a elevated privileged command line
+
+>java -jar bin/felix.jar
+
+
+
+Build:
+	javac -cp ../../bin/felix.jar Activator.java
+	jar cfm build.jar manifest.mf .
+
+Definir JAVA_HOME para C:\Program Files\Java\jdk1.8.0_60 como variável do utilizador senão o ant não funciona
+
+List bundles
+	g! lb
+
+g! start file:/C:/Users/Rafael/Downloads/org.apache.felix.main.distribution-5.4.0/tests/01_hello_world/dist/lib/HelloWorld-20151206.jar
+
+g! start file:/C:/Users/Rafael/Downloads/org.apache.felix.main.distribution-5.4.0/tests/02_bundle_implementation/dist/lib/BundleImpl-20151207.jar
+
+g! start file:/C:/Users/Rafael/Downloads/org.apache.felix.main.distribution-5.4.0/tests/03_bundle_client/dist/lib/BundleClient-20151207.jar
+
+stop <ID>
+
+
+If for some reason you can't stop the bundle and it starts when you restart felix just go on felix-cache folder and delete the problematic bundle when felix is shutdown.
+
+
+
+
+
+
+Cuidado quando utilizamos componentes a interface e a implementação têm de ser expostos no componente que providência o serviço.
+A classe referência a interface só precisa de ter a mesma estrutura. Não precisa de ser a mesma classe.
+Quando um componente é parado se o método que recebe a notificação à cerca do estado do componente (parado neste caso) está sincronizado recebe esta notificação programaticamente antes do utilizador a receber.
+Depois do serviço ter sido parado se a referÊncia do lado do componente que utiliza o que foi desligado não tiver sido explicitamente colocada a null este componente continua a existir.
+Através do comando "inspect capability service 2" podemos obter service.scope sendo singleton por exemplo só existe uma instância também pode ser bundle.
+
+
+Ver OSGi book 1 – OSGi headers para ter informação à cerca dos campos no manifest.mf.
+O que aparece na webconsole na tab Services na colua bundle é o Bundle-SymbolicName.
+
+
+
+
+Comandos:
+http://www.buluschek.com/?p=311
+
+
+	Get the current framework start level and then sets it. When setting a new level, all levels in between the current and the new level are activated in between.
+		frameworklevel
+		frameworklevel 2
+
+	For bundles which will be newly installed, set which bundle start level they will have assigned (here level 3) after install
+
+
+	Installing felix webconsole
+	g! bundlelevel -i 3
+
+	For bundles already installed, set the bundle start level, here to level 5 for bundles 94 and 172
+	g! bundlelevel -s 5 94 172
+
+	Set bundle 23 to be started, when the frameworklevel gets equal or above the bundle’s start level (resp stop)
+	g! start 23
+	g! stop 23
+
+	update
+	install
+	uninstall
+
+	Get detailed infos on a bundles headers (basically the manifest content)
+		headers 3
+
+
+
+	Get list of services offered by a bundle (here bundle 2)
+		g! inspect capability service 2
+		org.apache.felix.configadmin [2] provides:
+		------------------------------------------
+		service; org.apache.felix.cm.PersistenceManager with properties:
+		service.description = Platform Filesystem Persistence Manager
+		service.id = 5
+		service.pid = org.apache.felix.cm.file.FilePersistenceManager
+		service.ranking = -2147483648
+		service.vendor = Apache Software Foundation
+		Used by:
+		org.apache.felix.configadmin [2]
+		...
+
+
+
+	Refresh bundles, so that they let go of old packages and surely use the new ones you just updated. If neceessary this will restart the bundles
+
+		g! refresh
+
+
+
+	system:getproperties
+
+
+
+First try install the the main package and each of the dependencies as errors occur
+
+	g! install http://central.maven.org/maven2/org/apache/felix/org.apache.felix.webconsole/4.2.14/org.apache.felix.webconsole-4.2.14.jar
+
+	The following packages I was trying to install before founding out about deploy
+
+		g! install http://central.maven.org/maven2/javax/servlet/javax.servlet-api/3.1.0/javax.servlet-api-3.1.0.jar
+
+		g! install http://central.maven.org/maven2/com/liferay/org.apache.commons.fileup
+		load/1.2.2.LIFERAY-PATCHED-1/org.apache.commons.fileupload-1.2.2.LIFERAY-PATCHED
+		-1.jar
+
+		install http://central.maven.org/maven2/javax/portlet/portlet-api/2.0/portlet-api-2.0.jar
+
+		install http://central.maven.org/maven2/commons-io/commons-io/2.4/commons-io-
+		2.4.jar
+
+	Not able to... :(
+
+Second try just use deploy and felix will install the main package and available dependencies
+
+	http://stackoverflow.com/questions/5994298/apache-felix-web-management-console-deploy-fails
+
+	g! deploy -s "Apache Felix Web Management Console"
+	Unsatisfied requirement(s):
+	---------------------------
+	   (&(package=org.json))
+	      Apache Felix Web Management Console
+
+	deploy org.apache.felix.webconsole this will install the bundle with it's dependencies.
+
+Access the console via http://localhost:8080/system/console/
+
+Username: admin
+Password: admin
+
+Configuring Bundles
+
+Some bundles use properties to configure certain aspects of their behavior. It is a good idea, when implementing bundles, to parameterize them with properties where appropriate. To learn about the configuration options for specific bundles, refer to the documentation that accompanies them.
+
+Bundle properties may also be defined in the conf/config.properties property file. Any property placed in this file will be accessible via BundleContext.getProperty() at run time. The property file uses the standard Java property file syntax (i.e., attribute-value pairs). For information on changing the default location of this file, refer to the section on configuring Felix.

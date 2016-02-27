@@ -1,0 +1,66 @@
+<project name="HelloWorld" default="dist" basedir=".">
+  
+
+  <description>
+    Simple example build file
+  </description>
+
+
+
+  <!-- set global properties for this build -->
+  <property name="src" location="src"/>
+  <property name="build" location="build"/>
+  <property name="dist" location="dist"/>
+
+  <target name="init">
+    <!-- Create the time stamp -->
+    <tstamp/>
+    <!-- Create the build directory structure used by compile -->
+    <mkdir dir="${build}"/>
+  </target>
+
+  <target name="compile" depends="init"
+        description="compile the source">
+    <!-- Compile the java code from ${src} into ${build} -->
+    <javac srcdir="${src}" destdir="${build}">
+      <classpath>
+        <pathelement location="../../bin/felix.jar"/>
+        <pathelement path="${java.class.path}/"/>
+      </classpath>
+    </javac>
+  </target>
+
+  <target name="dist" depends="compile"
+        description="generate the distribution">
+    <!-- Create the distribution directory -->
+    <mkdir dir="${dist}/lib"/>
+    
+    <!--
+    <delete file="hello.jar"/>
+    <delete file="MANIFEST.MF"/>
+    <manifest file="MANIFEST.MF">
+        <attribute name="Built-By" value="${user.name}"/>
+        <attribute name="Main-Class" value="howto.Hello"/>
+    </manifest>
+    -->
+
+    <!-- Put everything in ${build} into the MyProject-${DSTAMP}.jar file -->
+    <jar jarfile="${dist}/lib/HelloWorld-${DSTAMP}.jar" basedir="${build}"  manifest="manifest.mf"/>
+  </target>
+
+  <target name="clean" description="clean up">
+    <!-- Delete the ${build} and ${dist} directory trees -->
+    <delete dir="${build}"/>
+    <delete dir="${dist}"/>
+  </target>
+
+</project>
+<!--
+I know you want to add the content of additional files, but maybe you only need to add simple attributes, this would help
+<jar destfile="${web.home}/signapplet.jar" 
+     basedir="${build.home}/applet/signer/classes">
+    <manifest>
+        <attribute name="Permissions" value="all-permissions"/>
+    </manifest>
+</jar>
+-->
